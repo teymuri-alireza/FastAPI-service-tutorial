@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, status, Query, HTTPException
+from fastapi.responses import JSONResponse
 from fastapi_swagger import patch_fastapi
 
 app = FastAPI(docs_url=None, swagger_ui_oauth2_redirect_url=None)
@@ -15,3 +16,16 @@ expenses_db = [
     {"id": 4, "description": "buy hat", "amount": 48.99},
     {"id": 5, "description": "repair charger", "amount": 55.50},
 ]
+
+@app.get("/expenses")
+async def list_expenses(item_id: int | None = Query(default=None, alias="id")):
+    if item_id is not None:
+        try:
+            index = item_id - 1
+            content = {"search result": expenses_db[index]}
+            return JSONResponse(content=content, status_code=status.HTTP_200_OK)
+        except IndexError:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="item not found")
+    else:
+        content = {"expenses": expenses_db}
+        return JSONResponse(content=content, status_code=status.HTTP_200_OK)

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, status, Query, HTTPException, Form
+from fastapi import FastAPI, status, Query, HTTPException, Form, Path
 from fastapi.responses import JSONResponse
 from fastapi_swagger import patch_fastapi
 
@@ -64,3 +64,25 @@ async def add_expense(desc: str = Form(alias="description"), amount: float = For
     new_expense = Expense(description=desc, amount=amount)
     index = new_expense.insert()
     return expenses_db[index]
+
+@app.put("/expense/edit/{item_id}")
+async def edit_expense(
+    item_id: int = Path(),
+    desc: str | None = Query(default=None, alias="description"),
+    amount: float | None = Query(default=None)
+    ):
+    try:
+        index = item_id - 1
+        if desc is None and amount is None:
+            content = {"status": "description and amount fields are empty. Nothing to change."}
+            return JSONResponse(content=content, status_code=status.HTTP_200_OK)
+        if desc.isdigit():
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="description can't be digit")
+        if desc is not None:
+            expenses_db[index]["description"] = desc
+        if amount is not None:
+            expenses_db[index]["amount"] = amount
+        content = {"status": "item updated successfully"}
+        return JSONResponse(content=content, status_code=status.HTTP_200_OK)
+    except IndexError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="item not found")

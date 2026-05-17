@@ -76,10 +76,11 @@ async def edit_expense(
         if desc is None and amount is None:
             content = {"status": "description and amount fields are empty. Nothing to change."}
             return JSONResponse(content=content, status_code=status.HTTP_200_OK)
-        if desc.isdigit():
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="description can't be digit")
         if desc is not None:
-            expenses_db[index]["description"] = desc
+            if desc.isdigit():
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="description can't be digit")
+            else:
+                expenses_db[index]["description"] = desc
         if amount is not None:
             expenses_db[index]["amount"] = amount
         content = {"status": "item updated successfully"}

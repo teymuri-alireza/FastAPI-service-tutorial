@@ -32,7 +32,7 @@ class Expense:
         self.description = description
         self.amount = amount
 
-    def insert(self) -> int:
+    def insert(self) -> int | None:
         """
         Calculate the new index and add the new expense to the database.
 

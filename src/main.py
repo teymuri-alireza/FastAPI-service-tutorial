@@ -5,9 +5,11 @@ from fastapi_swagger import patch_fastapi
 app = FastAPI(docs_url=None, swagger_ui_oauth2_redirect_url=None)
 patch_fastapi(app, redirect_from_root_to_docs=False)
 
+
 @app.get("/")
 async def root():
     return {"response": "Hello World"}
+
 
 expenses_db = [
     {"id": 1, "description": "buy food", "amount": 12.45},
@@ -17,17 +19,19 @@ expenses_db = [
     {"id": 5, "description": "repair charger", "amount": 55.50},
 ]
 
+
 class Expense:
     """
     Represent an expense model.
     """
+
     def __init__(self, description: str, amount: float) -> None:
         """
         initialize the expense model.
         """
         self.description = description
         self.amount = amount
-    
+
     def insert(self) -> int:
         """
         Calculate the new index and add the new expense to the database.
@@ -46,11 +50,13 @@ class Expense:
         new_index = find_expense_index(new_id)
         return new_index
 
+
 def find_expense_index(item_id) -> int | None:
     for item in expenses_db:
         if item["id"] == item_id:
             return expenses_db.index(item)
     return None
+
 
 @app.get("/expenses")
 async def list_expenses(item_id: int | None = Query(default=None, alias="id")):
@@ -67,6 +73,7 @@ async def list_expenses(item_id: int | None = Query(default=None, alias="id")):
         content = {"expenses": expenses_db}
         return JSONResponse(content=content, status_code=status.HTTP_200_OK)
 
+
 @app.post("/expenses", status_code=status.HTTP_201_CREATED)
 async def add_expense(desc: str = Form(alias="description"), amount: float = Form(...)):
     new_expense = Expense(description=desc, amount=amount)
@@ -74,6 +81,7 @@ async def add_expense(desc: str = Form(alias="description"), amount: float = For
     if index is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="item not found")
     return expenses_db[index]
+
 
 @app.put("/expense/edit/{item_id}")
 async def edit_expense(
@@ -99,6 +107,7 @@ async def edit_expense(
         return JSONResponse(content=content, status_code=status.HTTP_200_OK)
     except IndexError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="item not found")
+
 
 @app.delete("/expense/delete/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_expense(item_id: int = Path()):

@@ -2,6 +2,7 @@ from fastapi import FastAPI, status, Query, HTTPException, Form, Path
 from fastapi.responses import JSONResponse
 from fastapi_swagger import patch_fastapi
 
+# Use patch_fastapi() to load swagger UI faster
 app = FastAPI(docs_url=None, swagger_ui_oauth2_redirect_url=None)
 patch_fastapi(app, redirect_from_root_to_docs=False)
 
@@ -52,6 +53,10 @@ class Expense:
 
 
 def find_expense_index(item_id) -> int | None:
+    """
+    Find an item's index using item's id value with a for loop.
+    Otherwise return `None`.
+    """
     for item in expenses_db:
         if item["id"] == item_id:
             return expenses_db.index(item)
@@ -61,6 +66,7 @@ def find_expense_index(item_id) -> int | None:
 @app.get("/expenses")
 async def list_expenses(item_id: int | None = Query(default=None, alias="id")):
     if item_id is not None:
+        # Search for an expense with a given ID
         try:
             index = find_expense_index(item_id)
             if index is None:
@@ -93,6 +99,7 @@ async def edit_expense(
         index = find_expense_index(item_id)
         if index is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="item not found")
+        # If no new values are provided
         if desc is None and amount is None:
             content = {"status": "description and amount fields are empty. Nothing to change."}
             return JSONResponse(content=content, status_code=status.HTTP_200_OK)
@@ -100,8 +107,10 @@ async def edit_expense(
             if desc.isdigit():
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="description can't be digit")
             else:
+                # Update description value
                 expenses_db[index]["description"] = desc
         if amount is not None:
+            # update amount value
             expenses_db[index]["amount"] = amount
         content = {"status": "item updated successfully"}
         return JSONResponse(content=content, status_code=status.HTTP_200_OK)

@@ -86,3 +86,11 @@ async def edit_expense(
         return JSONResponse(content=content, status_code=status.HTTP_200_OK)
     except IndexError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="item not found")
+
+@app.delete("/expense/delete/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_expense(item_id: int = Path()):
+    try:
+        index = item_id - 1
+        del expenses_db[index]
+    except IndexError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="item not found")

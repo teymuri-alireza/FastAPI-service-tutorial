@@ -43,14 +43,22 @@ class Expense:
         }
         expenses_db.append(new_expense)
 
-        new_index = new_id - 1
+        new_index = find_expense_index(new_id)
         return new_index
+
+def find_expense_index(item_id) -> int | None:
+    for item in expenses_db:
+        if item["id"] == item_id:
+            return expenses_db.index(item)
+    return None
 
 @app.get("/expenses")
 async def list_expenses(item_id: int | None = Query(default=None, alias="id")):
     if item_id is not None:
         try:
-            index = item_id - 1
+            index = find_expense_index(item_id)
+            if index is None:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="item not found")
             content = {"search result": expenses_db[index]}
             return JSONResponse(content=content, status_code=status.HTTP_200_OK)
         except IndexError:
@@ -63,6 +71,8 @@ async def list_expenses(item_id: int | None = Query(default=None, alias="id")):
 async def add_expense(desc: str = Form(alias="description"), amount: float = Form(...)):
     new_expense = Expense(description=desc, amount=amount)
     index = new_expense.insert()
+    if index is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="item not found")
     return expenses_db[index]
 
 @app.put("/expense/edit/{item_id}")
@@ -72,7 +82,9 @@ async def edit_expense(
     amount: float | None = Query(default=None)
     ):
     try:
-        index = item_id - 1
+        index = find_expense_index(item_id)
+        if index is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="item not found")
         if desc is None and amount is None:
             content = {"status": "description and amount fields are empty. Nothing to change."}
             return JSONResponse(content=content, status_code=status.HTTP_200_OK)
@@ -91,7 +103,9 @@ async def edit_expense(
 @app.delete("/expense/delete/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_expense(item_id: int = Path()):
     try:
-        index = item_id - 1
+        index = find_expense_index(item_id)
+        if index is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="item not found")
         del expenses_db[index]
     except IndexError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="item not found")

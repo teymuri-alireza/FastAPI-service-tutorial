@@ -1,4 +1,4 @@
-from fastapi import FastAPI, status, Query, HTTPException
+from fastapi import FastAPI, status, Query, HTTPException, Form
 from fastapi.responses import JSONResponse
 from fastapi_swagger import patch_fastapi
 
@@ -58,3 +58,9 @@ async def list_expenses(item_id: int | None = Query(default=None, alias="id")):
     else:
         content = {"expenses": expenses_db}
         return JSONResponse(content=content, status_code=status.HTTP_200_OK)
+
+@app.post("/expenses", status_code=status.HTTP_201_CREATED)
+async def add_expense(desc: str = Form(alias="description"), amount: float = Form(...)):
+    new_expense = Expense(description=desc, amount=amount)
+    index = new_expense.insert()
+    return expenses_db[index]

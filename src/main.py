@@ -98,7 +98,6 @@ def delete_name(uid: int):
     index = uid - 1
     try:
         del names_list[index]
-        return {"reponse": "item deleted successfully"}
     except IndexError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="object not found"

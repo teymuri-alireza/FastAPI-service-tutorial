@@ -4,13 +4,14 @@ class StatusResponse(BaseModel):
     status: str
     message: str
 
-class UserResponseSchema(BaseModel):
-    id: int
+class UserBaseModel(BaseModel):
     name: str
 
-class UserCreateSchema(BaseModel):
-    name: str
-
-class UserUpdateSchema(BaseModel):
+class UserResponseSchema(UserBaseModel):
     id: int
-    name: str
+
+class UserCreateSchema(UserBaseModel):
+    pass
+
+class UserUpdateSchema(UserBaseModel):
+    id: int

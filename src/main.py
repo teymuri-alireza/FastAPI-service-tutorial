@@ -72,6 +72,7 @@ async def fetch_name(name_id: int):
 # ):
 # def create_name(new_name: str = Body(), age: int = Body()):
 def create_name(new_name: UserCreateSchema):
+    new_name.model_dump()
     if new_name.name.isdigit():
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

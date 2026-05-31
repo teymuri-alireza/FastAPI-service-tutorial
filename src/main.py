@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from fastapi_swagger import patch_fastapi
 from contextlib import asynccontextmanager
 from random import randint
+from schemas import StatusResponse, UserCreateSchema, UserUpdateSchema, UserResponseSchema
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -33,12 +34,13 @@ class NameList:
     def create_obj(self):
         new_obj = {"id": randint(10, 1000), "name": self.name}
         names_list.append(new_obj)
+        return new_obj
 
 @app.get("/")
 async def root():
     return {"response": "Hello World"}
 
-@app.get("/names", status_code=status.HTTP_200_OK)
+@app.get("/names", status_code=status.HTTP_200_OK, response_model=UserResponseSchema | list[UserResponseSchema])
 # async def list_names(search: str | None = None):
 # async def list_names(search: Annotated[str | None, Query(max_length=25)] = None):
 async def list_names(search: str | None = Query(default=None, max_length=25)):
@@ -54,7 +56,7 @@ async def list_names(search: str | None = Query(default=None, max_length=25)):
         return JSONResponse(content=content, status_code=status.HTTP_200_OK)
 
 
-@app.get("/names/{name_id}", status_code=status.HTTP_200_OK)
+@app.get("/names/{name_id}", status_code=status.HTTP_200_OK, response_model=dict[str, UserResponseSchema])
 async def fetch_name(name_id: int):
     index = name_id - 1
     try:
@@ -64,27 +66,28 @@ async def fetch_name(name_id: int):
             status_code=status.HTTP_404_NOT_FOUND, detail="object not found"
         )
 
-@app.post("/names", status_code=status.HTTP_201_CREATED)
+@app.post("/names", status_code=status.HTTP_201_CREATED, response_model=UserResponseSchema)
 # def create_name(
 #     new_name: str = Query(examples=["John", "Marry"], min_length=3, max_length=30),
 # ):
 # def create_name(new_name: str = Body(), age: int = Body()):
-def create_name(new_name: str = Form()):
-    if new_name.isdigit():
+def create_name(new_name: UserCreateSchema):
+    if new_name.name.isdigit():
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Name can't be digit",
         )
-    instance = NameList(new_name)
-    instance.create_obj()
-    return new_name
+    instance = NameList(new_name.name)
+    new_user = instance.create_obj()
+    return new_user
 
-@app.put("/names/{uid}", status_code=status.HTTP_200_OK)
-def update_name(uid: int, new_name: str):
-    index = uid - 1
+@app.put("/names/update", status_code=status.HTTP_200_OK, response_model=UserResponseSchema)
+# def update_name(uid: int, new_name: str):
+def update_name(user: UserUpdateSchema):
+    index = user.id - 1
     try:
-        names_list[index]["name"] = new_name
-        return new_name
+        names_list[index]["name"] = user.name
+        return names_list[index]
     except IndexError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="object not found"

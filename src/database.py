@@ -33,10 +33,12 @@ class User(Base):
 
 Base.metadata.create_all(engine)
 
+# COMMANDS DOCUMENTATION
+
 # Creating an instance of session to control
 # db commands
 # """
-session = SessionLocal()
+# session = SessionLocal()
 # """
 
 # Inseting one value
@@ -149,4 +151,4 @@ latest_order_date = session.query(func.max(Order.created_at)).scalar()
 print("Most Recent Order Date:", latest_order_date)
 """
 
-session.close()
+# session.close()

@@ -31,6 +31,18 @@ class User(Base):
     def __repr__(self):
         return f"User(id={self.id},first_name={self.first_name},last_name={self.last_name},age={self.age})"
 
+class Address(Base):
+    __tablename__ = "addresses"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(ForeignKey("users.id")) # The table name is used
+    city = Column(String(100))
+
+    user = relationship("User", back_populates="addresses")
+
+    def __repr__(self):
+        return f"Address(id={self.id},user_id={self.user_id},city={self.city})"
+
 Base.metadata.create_all(engine)
 
 # COMMANDS DOCUMENTATION

@@ -33,6 +33,10 @@ class User(Base):
         back_populates="user" # Other table's relationship's field is used
     )
 
+    # Use `uselist=False` for one-to-one relationship to avoid list output in query
+    # Note: We expect only 1 output, not many
+    profile = relationship("Profile", back_populates="user", uselist=False)
+
     def __repr__(self):
         return f"User(id={self.id},first_name={self.first_name},last_name={self.last_name},age={self.age})"
 
@@ -47,6 +51,22 @@ class Address(Base):
 
     def __repr__(self):
         return f"Address(id={self.id},user_id={self.user_id},city={self.city})"
+
+class Profile(Base):
+    __tablename__ = "profiles"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(ForeignKey("users.id"), unique=True)
+    """
+    # Alternative:
+    user_id = Column(ForeignKey("users.id"), primary_key=True)
+
+    # In the method above we won't use `id` anymore since the user_id is set
+    # as the Profile.id
+    """
+    username = Column(String(50), nullable=False)
+
+    user = relationship("User", back_populates="profile")
 
 Base.metadata.create_all(engine)
 

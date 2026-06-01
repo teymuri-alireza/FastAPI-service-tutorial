@@ -50,6 +50,53 @@ class Address(Base):
 
 Base.metadata.create_all(engine)
 
+with SessionLocal() as session:
+    # Define base users
+
+    # james = User(first_name="James", last_name="Brown", age=36)
+    # sarah = User(first_name="Sarah", last_name="Jackson", age=36)
+    # paul = User(first_name="Paul", last_name="Blake", age=36)
+    # session.add_all([james, sarah, paul])
+    # session.commit()
+
+    # Define some addresses for each user
+
+    # james = session.query(User).filter_by(first_name="James").one_or_none()
+    # if james is not None:
+    #     addresses = [
+    #         Address(user_id=james.id, city="Tehran"),
+    #         Address(user_id=james.id, city="Esfehan"),
+    #         Address(user_id=james.id, city="Karaj"),
+    #     ]
+    # sarah = session.query(User).filter_by(first_name="Sarah").one_or_none()
+    # if sarah is not None:
+    #     addresses.extend([
+    #         Address(user_id=sarah.id, city="Tehran"),
+    #         Address(user_id=sarah.id, city="Shiraz"),
+    #     ])
+    # paul = session.query(User).filter_by(first_name="Paul").one_or_none()
+    # if paul is not None:
+    #     addresses.extend([
+    #         Address(user_id=paul.id, city="Kermanshah"),
+    #     ])
+    # session.add_all(addresses)
+    # session.commit()
+
+    # Query each table based on the other
+    # Query 1
+
+    # found_user = session.query(User).filter_by(first_name="James").one_or_none()
+    # if found_user is not None:
+    #     print(found_user.addresses)
+
+    # Query 2
+
+    # found_address = session.query(Address).filter_by(city="Tehran").all()
+    # for address in found_address:
+    #     print(address.user.first_name)
+
+    pass
+
 # COMMANDS DOCUMENTATION
 
 # Creating an instance of session to control

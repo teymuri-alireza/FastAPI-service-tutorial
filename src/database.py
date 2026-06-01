@@ -99,4 +99,54 @@ users_filtered = session.query(User).filter(not_(User.name == "ali")).all()
 users = session.query(User).filter(or_(not_(User.name == "ali"),and_(User.age >35,User.age<60))
 """
 
+# Use aggregation for complex queries
+"""
+from sqlalchemy import func
+
+# 1. Count Total Users
+total_users = session.query(func.count(User.id)).scalar()
+print("Total Users:", total_users)
+
+# 2. Find the Average Age of Users
+average_age = session.query(func.avg(User.age)).scalar()
+print("Average Age:", average_age)
+
+# 3. Find the Maximum and Minimum Age
+max_age = session.query(func.max(User.age)).scalar()
+min_age = session.query(func.min(User.age)).scalar()
+print(f"Max Age: {max_age}, Min Age: {min_age}")
+
+# 4. Find the Total Number of Orders
+total_orders = session.query(func.count(Order.id)).scalar()
+print("Total Orders:", total_orders)
+
+# 5. Find the Sum of All Order Amounts
+total_revenue = session.query(func.sum(Order.total_amount)).scalar()
+print("Total Revenue:", total_revenue)
+
+# 6. Find the Average Order Value
+average_order_value = session.query(func.avg(Order.total_amount)).scalar()
+print("Average Order Value:", average_order_value)
+
+# 7. Find Users Who Have Placed the Most Orders
+most_active_users = session.query(
+    User.name, func.count(Order.id).label("order_count")
+).join(Order).group_by(User.id).order_by(func.count(Order.id).desc()).limit(5).all()
+print("Top 5 Active Users by Order Count:", most_active_users)
+
+# 8. Find Users with the Highest Total Spending
+top_spenders = session.query(
+    User.name, func.sum(Order.total_amount).label("total_spent")
+).join(Order).group_by(User.id).order_by(func.sum(Order.total_amount).desc()).limit(5).all()
+print("Top 5 Users by Spending:", top_spenders)
+
+# 9. Find Users Who Have Not Placed Any Orders
+users_without_orders = session.query(User).outerjoin(Order).filter(Order.id == None).all()
+print("Users Without Orders:", [user.name for user in users_without_orders])
+
+# 10. Find the Most Recent Order Date
+latest_order_date = session.query(func.max(Order.created_at)).scalar()
+print("Most Recent Order Date:", latest_order_date)
+"""
+
 session.close()

@@ -81,9 +81,9 @@ async def list_expenses(item_id: int | None = Query(default=None, alias="id")):
         return JSONResponse(content=content, status_code=status.HTTP_200_OK)
 
 
-@app.post("/expenses", status_code=status.HTTP_201_CREATED)
-async def add_expense(desc: str = Form(alias="description"), amount: float = Form(...)):
-    new_expense = Expense(description=desc, amount=amount)
+@app.post("/expenses", status_code=status.HTTP_201_CREATED, response_model=ExpenseResponseSchema)
+async def add_expense(expense: ExpenseCreateSchema):
+    new_expense = Expense(description=expense.description, amount=expense.amount)
     index = new_expense.insert()
     if index is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="item not found")

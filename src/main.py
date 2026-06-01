@@ -1,6 +1,7 @@
 from fastapi import FastAPI, status, Query, HTTPException, Form, Path
 from fastapi.responses import JSONResponse
 from fastapi_swagger import patch_fastapi
+from schemas import ExpenseResponseSchema, ExpenseCreateSchema, ExpenseUpdateSchema
 
 # Use patch_fastapi() to load swagger UI faster
 app = FastAPI(docs_url=None, swagger_ui_oauth2_redirect_url=None)
@@ -64,7 +65,7 @@ def find_expense_index(item_id) -> int | None:
     return None
 
 
-@app.get("/expenses")
+@app.get("/expenses", response_model=ExpenseResponseSchema | list[ExpenseResponseSchema])
 async def list_expenses(item_id: int | None = Query(default=None, alias="id")):
     if item_id is not None:
         # Search for an expense with a given ID
@@ -72,13 +73,11 @@ async def list_expenses(item_id: int | None = Query(default=None, alias="id")):
             index = find_expense_index(item_id)
             if index is None:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="item not found")
-            content = {"search result": expenses_db[index]}
-            return JSONResponse(content=content, status_code=status.HTTP_200_OK)
+            return expenses_db[index]
         except IndexError:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="item not found")
     else:
-        content = {"expenses": expenses_db}
-        return JSONResponse(content=content, status_code=status.HTTP_200_OK)
+        return expenses_db
 
 
 @app.post("/expenses", status_code=status.HTTP_201_CREATED, response_model=ExpenseResponseSchema)
@@ -90,31 +89,28 @@ async def add_expense(expense: ExpenseCreateSchema):
     return expenses_db[index]
 
 
-@app.put("/expense/edit/{item_id}")
+@app.put("/expense/edit/{item_id}", response_model=ExpenseResponseSchema)
 async def edit_expense(
+    expense: ExpenseUpdateSchema,
     item_id: int = Path(),
-    desc: str | None = Query(default=None, alias="description"),
-    amount: float | None = Query(default=None)
     ):
     try:
         index = find_expense_index(item_id)
         if index is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="item not found")
         # If no new values are provided
-        if desc is None and amount is None:
-            content = {"status": "description and amount fields are empty. Nothing to change."}
-            return JSONResponse(content=content, status_code=status.HTTP_200_OK)
-        if desc is not None:
-            if desc.isdigit():
+        if expense.description is None and expense.amount is None:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields provided for update")
+        if expense.description is not None:
+            if expense.description.isdigit():
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="description can't be digit")
             else:
                 # Update description value
-                expenses_db[index]["description"] = desc
-        if amount is not None:
+                expenses_db[index]["description"] = expense.description
+        if expense.amount is not None:
             # update amount value
-            expenses_db[index]["amount"] = amount
-        content = {"status": "item updated successfully"}
-        return JSONResponse(content=content, status_code=status.HTTP_200_OK)
+            expenses_db[index]["amount"] = expense.amount
+        return expenses_db[index]
     except IndexError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="item not found")
 

@@ -1,5 +1,5 @@
-from sqlalchemy import create_engine, Column, String, Integer, Boolean
-from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from sqlalchemy import create_engine, Column, String, Integer, Boolean, ForeignKey
+from sqlalchemy.orm import sessionmaker, DeclarativeBase, relationship
 
 database = "sqlite.db"
 
@@ -27,6 +27,11 @@ class User(Base):
     age = Column(Integer)
     is_active = Column(Boolean, default=True, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
+
+    addresses = relationship(
+        "Address", # Class name is used
+        back_populates="user" # Other table's relationship's field is used
+    )
 
     def __repr__(self):
         return f"User(id={self.id},first_name={self.first_name},last_name={self.last_name},age={self.age})"

@@ -8,3 +8,6 @@ env/
 
 # VS Code Directory
 .vscode/
+
+# SQLite3 database file
+sqlite.db

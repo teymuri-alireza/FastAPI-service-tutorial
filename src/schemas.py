@@ -19,6 +19,7 @@ class ExpenseBaseModel(BaseModel):
     def round_amount(self, amount: float):
         return round(amount, 2)
 
+
 class ExpenseResponseSchema(ExpenseBaseModel):
     """
     Represents an expense returned by the API.
@@ -28,11 +29,13 @@ class ExpenseResponseSchema(ExpenseBaseModel):
     """
     id: int = Field(..., description="Unique identifier of the expense.")
 
+
 class ExpenseCreateSchema(ExpenseBaseModel):
     """
     Represents the payload required to create a new expense.
     """
     pass
+
 
 class ExpenseUpdateSchema(BaseModel):
     """
